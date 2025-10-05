@@ -9,17 +9,15 @@ import webmanifest from "astro-webmanifest";
 import { defineConfig, envField } from "astro/config";
 import { expressiveCodeOptions, siteConfig } from "./src/site.config";
 
-// Hybrid 输出用主入口即可（会同时产出静态文件与函数）
-import vercel from "@astrojs/vercel";
+// ✅ 与 server 输出匹配：serverless 适配器
+import vercel from "@astrojs/vercel/serverless";
 
-// Remark plugins
 import remarkDirective from "remark-directive";
 import { remarkAdmonitions } from "./src/plugins/remark-admonitions";
 import { remarkReadingTime } from "./src/plugins/remark-reading-time";
 import remarkMath from "remark-math";
 import remarkGemoji from "remark-gemoji";
 
-// Rehype plugins
 import rehypeExternalLinks from "rehype-external-links";
 import rehypeUnwrapImages from "rehype-unwrap-images";
 import rehypeKatex from "rehype-katex";
@@ -27,9 +25,9 @@ import rehypeKatex from "rehype-katex";
 import decapCmsOauth from "astro-decap-cms-oauth";
 
 export default defineConfig({
-  // ✅ 改为 Hybrid：绝大多数页面会被预渲染，仍可保留 server 路由
-  output: "hybrid",
-  // ✅ 默认将页面预渲染（对 sitemap 至关重要）
+  // ✅ 回到 server
+  output: "server",
+  // ✅ 关键：默认预渲染所有可预渲染页面（让 dist/client 里产出 .html）
   prerender: { default: true },
 
   adapter: vercel(),
@@ -40,7 +38,7 @@ export default defineConfig({
     expressiveCode(expressiveCodeOptions),
     icon({ iconDir: "public/icons" }),
     tailwind({ applyBaseStyles: false, nesting: true }),
-    sitemap(),   // 现在会在构建时真正写出 sitemap*.xml
+    sitemap(),
     mdx(),
     robotsTxt(),
     webmanifest({
@@ -72,7 +70,7 @@ export default defineConfig({
       [
         rehypeExternalLinks,
         {
-          // 修正：rel 需要是字符串数组，而不是带逗号的单个字符串
+          // 修正：要用数组，而不是把逗号放在一个字符串里
           rel: ["nofollow", "noreferrer"],
           target: "_blank",
         },
@@ -95,7 +93,7 @@ export default defineConfig({
 
   prefetch: { defaultStrategy: "viewport", prefetchAll: true },
 
-  // 必须是完整 https URL；它决定 sitemap 的生成与链接
+  // 这一条会决定 sitemap 的生成与链接
   site: "https://zerotwo.in/",
 
   vite: {
