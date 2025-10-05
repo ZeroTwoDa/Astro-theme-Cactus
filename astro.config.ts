@@ -9,8 +9,8 @@ import webmanifest from "astro-webmanifest";
 import { defineConfig, envField } from "astro/config";
 import { expressiveCodeOptions, siteConfig } from "./src/site.config";
 
-// ✅ 使用与 output: 'server' 匹配的 vercel 适配器入口
-import vercel from "@astrojs/vercel/serverless";
+// Hybrid 输出用主入口即可（会同时产出静态文件与函数）
+import vercel from "@astrojs/vercel";
 
 // Remark plugins
 import remarkDirective from "remark-directive";
@@ -27,24 +27,23 @@ import rehypeKatex from "rehype-katex";
 import decapCmsOauth from "astro-decap-cms-oauth";
 
 export default defineConfig({
-  // 你需要 server 环境以支持 CMS OAuth 回调，保持 server 输出
-  output: "server",
+  // ✅ 改为 Hybrid：绝大多数页面会被预渲染，仍可保留 server 路由
+  output: "hybrid",
+  // ✅ 默认将页面预渲染（对 sitemap 至关重要）
+  prerender: { default: true },
+
   adapter: vercel(),
 
-  image: {
-    domains: ["webmention.io"],
-  },
+  image: { domains: ["webmention.io"] },
 
   integrations: [
     expressiveCode(expressiveCodeOptions),
     icon({ iconDir: "public/icons" }),
     tailwind({ applyBaseStyles: false, nesting: true }),
-    // ✅ 站点地图已启用
-    sitemap(),
+    sitemap(),   // 现在会在构建时真正写出 sitemap*.xml
     mdx(),
     robotsTxt(),
     webmanifest({
-      // See: https://github.com/alextim/astro-lib/blob/main/packages/astro-webmanifest/README.md
       name: siteConfig.title,
       short_name: "ZeroTwo",
       description: siteConfig.description,
@@ -73,7 +72,7 @@ export default defineConfig({
       [
         rehypeExternalLinks,
         {
-          // ✅ 这里必须是数组形式的多个值
+          // 修正：rel 需要是字符串数组，而不是带逗号的单个字符串
           rel: ["nofollow", "noreferrer"],
           target: "_blank",
         },
@@ -94,10 +93,9 @@ export default defineConfig({
     },
   },
 
-  // 预取策略保持不变
   prefetch: { defaultStrategy: "viewport", prefetchAll: true },
 
-  // ⚠️ 这里必须是完整的 https URL，决定 sitemap 是否生成
+  // 必须是完整 https URL；它决定 sitemap 的生成与链接
   site: "https://zerotwo.in/",
 
   vite: {
