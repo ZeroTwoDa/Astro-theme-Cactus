@@ -2,8 +2,8 @@ backend:
   name: github
   branch: main # change this to your branch
   repo: ZeroTwoDa/Astro-theme-Cactus # 1、change this to your repo
-  site_domain: zerotwo.in # 2、change this to your domain
-  base_url: https://zerotwo.in # 3、change this to your prod URL
+  site_domain: blog.799911.xyz # 2、change this to your domain
+  base_url: https://blog.799911.xyz # 3、change this to your prod URL
   auth_endpoint: oauth # the oauth route provided by the integration
 
 collections:
