@@ -110,7 +110,7 @@ export default defineConfig({
     prefetchAll: true,
   },
     // ! 改为你的网站地址，不然社交图片无法加载
-    site: "https://zerotwo.in/",
+    site: "https://blog.sok.pw/",
     vite: {
         optimizeDeps: {
             exclude: ["@resvg/resvg-js"],
